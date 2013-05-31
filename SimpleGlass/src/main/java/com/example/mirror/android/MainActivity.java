@@ -129,6 +129,7 @@ public class MainActivity extends Activity {
                     String type = data.getStringExtra(
                             AccountManager.KEY_ACCOUNT_TYPE);
 
+                    // TODO: Cache the chosen account
                     Log.i(TAG, String.format("User selected account %s of type %s",
                             account, type));
                     fetchTokenForAccount(account);
@@ -152,8 +153,12 @@ public class MainActivity extends Activity {
             String message = mNewCardEditText.getText().toString();
             if (!TextUtils.isEmpty(message)) {
                 try {
+                    JSONObject notification = new JSONObject();
+                    notification.put("level", "DEFAULT"); // Play a chime
+
                     JSONObject json = new JSONObject();
                     json.put("text", message);
+                    json.put("notification", notification);
 
                     MirrorApiClient client = MirrorApiClient.getInstance(this);
                     client.createTimelineItem(mAuthToken, json, new MirrorApiClient.Callback() {
