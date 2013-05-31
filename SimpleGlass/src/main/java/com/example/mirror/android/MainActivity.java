@@ -10,11 +10,17 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.android.gms.common.AccountPicker;
+import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
@@ -43,6 +49,8 @@ public class MainActivity extends Activity {
     private String mAuthToken;
     private Button mStartAuthButton;
     private Button mExpireTokenButton;
+    private ImageButton mNewCardButton;
+    private EditText mNewCardEditText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +62,8 @@ public class MainActivity extends Activity {
         // Get our views
         mStartAuthButton = (Button) findViewById(R.id.oauth_button);
         mExpireTokenButton = (Button) findViewById(R.id.oauth_expire_button);
+        mNewCardButton = (ImageButton) findViewById(R.id.new_card_button);
+        mNewCardEditText = (EditText) findViewById(R.id.new_card_message);
 
         // Restore any saved instance state
         if (savedInstanceState != null) {
@@ -85,6 +95,13 @@ public class MainActivity extends Activity {
                     mExpireTokenButton.setEnabled(false);
                     mStartAuthButton.setEnabled(true);
                 }
+            }
+        });
+
+        mNewCardButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                createNewTimelineItem();
             }
         });
     }
@@ -130,7 +147,54 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void createNewTimelineItem() {
+        if (!TextUtils.isEmpty(mAuthToken)) {
+            String message = mNewCardEditText.getText().toString();
+            if (!TextUtils.isEmpty(message)) {
+                try {
+                    JSONObject json = new JSONObject();
+                    json.put("text", message);
+
+                    MirrorApiClient client = MirrorApiClient.getInstance(this);
+                    client.createTimelineItem(mAuthToken, json, new MirrorApiClient.Callback() {
+                        @Override
+                        public void onSuccess(HttpResponse response) {
+                            try {
+                                Log.v(TAG, "onSuccess: " + EntityUtils.toString(response.getEntity()));
+                            } catch (IOException e1) {
+                                // Pass
+                            }
+                            Toast.makeText(MainActivity.this, "Created new timeline item",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onFailure(HttpResponse response, Throwable e) {
+                            try {
+                                Log.v(TAG, "onFailure: " + EntityUtils.toString(response.getEntity()));
+                            } catch (IOException e1) {
+                                // Pass
+                            }
+                            Toast.makeText(MainActivity.this, "Failed to create new timeline item",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } catch (JSONException e) {
+                    Toast.makeText(this, "Sorry, can't serialize that to JSON",
+                            Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(this, "Sorry, can't create an empty timeline item",
+                        Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "Sorry, can't create a new timeline card without a token",
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
     private void onTokenResult(String token) {
+        Log.d(TAG, "onTokenResult: " + token);
         if (!TextUtils.isEmpty(token)) {
             mAuthToken = token;
             mExpireTokenButton.setEnabled(true);
