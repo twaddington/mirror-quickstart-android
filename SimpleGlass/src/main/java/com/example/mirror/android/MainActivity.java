@@ -234,25 +234,43 @@ public class MainActivity extends Activity {
                             }
                         });
                     }
-                } catch (UserRecoverableAuthException e) {
+                } catch (final UserRecoverableAuthException e) {
                     // This means that the app hasn't been authorized by the user for access
                     // to the scope, so we're going to have to fire off the (provided) Intent
                     // to arrange for that. But we only want to do this once. Multiple
                     // attempts probably mean the user said no.
                     Log.i(TAG, "Handling a UserRecoverableAuthException");
-                    startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            startActivityForResult(e.getIntent(), REQUEST_AUTHORIZATION);
+                        }
+                    });
                 } catch (IOException e) {
                     // Something is stressed out; the auth servers are by definition
                     // high-traffic and you can't count on 100% success. But it would be
                     // bad to retry instantly, so back off
                     Log.e(TAG, "Failed to fetch auth token!", e);
-                    Toast.makeText(MainActivity.this,
-                            "Failed to fetch token, try again later", Toast.LENGTH_LONG).show();
+
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this,
+                                    "Failed to fetch token, try again later", Toast.LENGTH_LONG).show();
+                        }
+                    });
                 } catch (GoogleAuthException e) {
                     // Can't recover from this!
                     Log.e(TAG, "Failed to fetch auth token!", e);
-                    Toast.makeText(MainActivity.this,
-                            "Failed to fetch token, can't recover", Toast.LENGTH_LONG).show();
+
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(MainActivity.this,
+                                    "Failed to fetch token, can't recover", Toast.LENGTH_LONG).show();
+                        }
+                    });
                 }
             }
         });
