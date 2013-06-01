@@ -3,6 +3,8 @@
 This is a sample Android application that demonstrates getting a valid OAuth2
 token for use with the Google Glass Mirror API without creating a web service.
 
+![Screenshot of the OAuth prompt](docs/images/Screenshot_2013-05-31-19-03-11.png)
+
 ## Dependencies
 
 This sample application depends on the Google Play Services library project.
