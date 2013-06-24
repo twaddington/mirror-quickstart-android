@@ -1,2 +1,2 @@
-include ':SimpleGlass'
+include ':mirror-quickstart-android'
 include ':libraries:GooglePlayServices'
