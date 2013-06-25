@@ -3,10 +3,12 @@ buildscript {
         maven { url 'http://repo1.maven.org/maven2' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.4'
+        classpath 'com.android.tools.build:gradle:0.4.2'
     }
 }
 apply plugin: 'android-library'
+
+archivesBaseName = 'GooglePlayServices'
 
 dependencies {
     compile files('libs/google-play-services.jar')
